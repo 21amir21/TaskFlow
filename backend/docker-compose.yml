@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
-      - DATABASE_URL=postgresql://postgres:test123@db:5432/mydb
+      - DATABASE_URL=postgresql://21amir21:test123@db:5432/tasksDB
     depends_on:
       - db
     volumes:
@@ -19,8 +19,13 @@ services:
     container_name: postgres_container
     restart: always
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: 21amir21
       POSTGRES_PASSWORD: test123
-      POSTGRES_DB: mydb
+      POSTGRES_DB: tasksDB
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

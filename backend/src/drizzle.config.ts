@@ -7,8 +7,8 @@ export default defineConfig({
   dbCredentials: {
     host: "localhost",
     port: 5432,
-    database: "mydb",
-    user: "postgres",
+    database: "tasksDB",
+    user: "21amir21",
     password: "test123",
     ssl: false,
   },
