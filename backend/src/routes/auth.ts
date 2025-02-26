@@ -32,7 +32,7 @@ authRouter.post(
         .where(eq(users.email, email));
 
       if (existingUser.length) {
-        res.status(400).json({ msg: "User with the same email exists!!" });
+        res.status(400).json({ error: "User with the same email exists!!" });
         return;
       }
       // hash the password
@@ -65,14 +65,16 @@ authRouter.post(
         .where(eq(users.email, email));
 
       if (!existingUser) {
-        res.status(400).json({ msg: "User with this email does not exist!!" });
+        res
+          .status(400)
+          .json({ error: "User with this email does not exist!!" });
         return;
       }
       // hash the password
       const isMatch = await bcryptjs.compare(password, existingUser.password);
 
       if (!isMatch) {
-        res.status(400).json({ msg: "Incorrect password!!" });
+        res.status(400).json({ error: "Incorrect password!!" });
         return;
       }
 

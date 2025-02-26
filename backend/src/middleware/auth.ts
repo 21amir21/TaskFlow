@@ -20,14 +20,14 @@ export const auth = async (
     const token = req.header("x-auth-token"); // "Authorization" can also be used!
 
     if (!token) {
-      res.status(401).json({ msg: "No auth token, access denied!!" });
+      res.status(401).json({ error: "No auth token, access denied!!" });
       return;
     }
 
     const verified = jwt.verify(token, "passwordKey");
 
     if (!verified) {
-      res.status(401).json({ msg: "Token verification faild!!" });
+      res.status(401).json({ error: "Token verification faild!!" });
       return;
     }
 
@@ -40,7 +40,7 @@ export const auth = async (
       .where(eq(users.id, verifiedToken.id));
     // if no user, return false
     if (!user) {
-      res.status(401).json({ msg: "User not found!!" });
+      res.status(401).json({ error: "User not found!!" });
       return;
     }
 
