@@ -41,11 +41,20 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("My Tasks"),
         actions: [
+          // TODO: will see later on if i wanna it that way
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.push(context, AddNewTaskPage.route());
+          //   },
+          //   icon: const Icon(Icons.add),
+          // ),
           IconButton(
             onPressed: () {
-              Navigator.push(context, AddNewTaskPage.route());
+              context.read<AuthCubit>().logout(
+                context,
+              ); // ✅ Call logout function
             },
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),
@@ -119,6 +128,14 @@ class _HomePageState extends State<HomePage> {
           }
           return const SizedBox();
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, AddNewTaskPage.route());
+        },
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
