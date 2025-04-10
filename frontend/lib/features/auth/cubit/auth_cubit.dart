@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/services/sp_service.dart';
+import 'package:frontend/features/auth/pages/login_page.dart';
 import 'package:frontend/features/auth/repository/auth_local_repository.dart';
 import 'package:frontend/features/auth/repository/auth_remote_repository.dart';
 import 'package:frontend/models/user_model.dart';
@@ -65,5 +67,17 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+
+  Future<void> logout(BuildContext context) async {
+    emit(AuthLoading());
+    await spService.removeToken();
+    await authLocalRepository.deleteUser();
+    emit(AuthInitial());
+
+    // Check if the widget is still mounted before navigating
+    if (!context.mounted) return;
+
+    Navigator.of(context).push(LoginPage.route());
   }
 }
