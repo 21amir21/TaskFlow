@@ -5,6 +5,7 @@ import 'package:frontend/core/constants/utils.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
 import 'package:frontend/features/home/cubit/tasks_cubit.dart';
 import 'package:frontend/features/home/pages/add_new_task_page.dart';
+import 'package:frontend/features/home/pages/profile_page.dart';
 import 'package:frontend/features/home/widgets/date_selector.dart';
 import 'package:frontend/features/home/widgets/task_card.dart';
 import 'package:intl/intl.dart';
@@ -24,13 +25,20 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    final user = context.read<AuthCubit>().state as AuthLoggedIn;
-    context.read<TasksCubit>().getAllTasks(token: user.user.token);
-    // do the Connectivity thing
-    Connectivity().onConnectivityChanged.listen((data) async {
-      if (data.contains(ConnectivityResult.wifi)) {
-        // ignore: use_build_context_synchronously
-        await context.read<TasksCubit>().syncTasks(user.user.token);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthCubit>().state;
+
+      if (authState is AuthLoggedIn) {
+        final user = authState.user;
+
+        context.read<TasksCubit>().getAllTasks(token: user.token);
+
+        Connectivity().onConnectivityChanged.listen((data) async {
+          if (data.contains(ConnectivityResult.wifi)) {
+            await context.read<TasksCubit>().syncTasks(user.token);
+          }
+        });
       }
     });
   }
@@ -39,20 +47,55 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Tasks"),
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 50),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, ProfilePage.route());
+                  },
+                  child: BlocBuilder<AuthCubit, AuthState>(
+                    builder: (context, state) {
+                      if (state is AuthLoggedIn) {
+                        return CircleAvatar(
+                          radius: 19,
+                          backgroundImage:
+                              state.user.profileImage != null
+                                  ? NetworkImage(state.user.profileImage!)
+                                  : const AssetImage(
+                                        "assets/imgs/default_avatar.jpg",
+                                      )
+                                      as ImageProvider,
+                        );
+                      }
+                      return const CircleAvatar(
+                        radius: 19,
+                        backgroundImage: AssetImage(
+                          "assets/imgs/default_avatar.jpg",
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "My Tasks",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
         actions: [
-          // TODO: will see later on if i wanna it that way
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(context, AddNewTaskPage.route());
-          //   },
-          //   icon: const Icon(Icons.add),
-          // ),
           IconButton(
             onPressed: () {
-              context.read<AuthCubit>().logout(
-                context,
-              ); // ✅ Call logout function
+              context.read<AuthCubit>().logout(context);
             },
             icon: const Icon(Icons.logout),
           ),
@@ -63,19 +106,20 @@ class _HomePageState extends State<HomePage> {
           if (state is TasksLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (state is TasksError) {
             return Center(child: Text(state.error));
           }
+
           if (state is GetTasksSuccess) {
-            // to filter tasks based on the date
             final tasks =
                 state.tasks
                     .where(
-                      (elem) =>
-                          DateFormat("d").format(elem.dueAt) ==
+                      (task) =>
+                          DateFormat("d").format(task.dueAt) ==
                               DateFormat("d").format(selectedDate) &&
-                          selectedDate.month == elem.dueAt.month &&
-                          selectedDate.year == elem.dueAt.year,
+                          selectedDate.month == task.dueAt.month &&
+                          selectedDate.year == task.dueAt.year,
                     )
                     .toList();
 
@@ -115,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.all(12.0),
                             child: Text(
                               DateFormat.jm().format(task.dueAt),
-                              style: TextStyle(fontSize: 17),
+                              style: const TextStyle(fontSize: 17),
                             ),
                           ),
                         ],
@@ -126,6 +170,7 @@ class _HomePageState extends State<HomePage> {
               ],
             );
           }
+
           return const SizedBox();
         },
       ),
