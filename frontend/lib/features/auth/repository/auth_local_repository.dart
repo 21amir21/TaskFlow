@@ -22,7 +22,7 @@ class AuthLocalRepository {
     final path = join(dbPath, "auth.db");
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < newVersion) {
           await db.execute('DROP TABLE $tableName');
@@ -33,7 +33,8 @@ class AuthLocalRepository {
             token TEXT NOT NULL,
             name TEXT NOT NULL,
             createdAt TEXT NOT NULL,
-            updatedAt TEXT NOT NULL
+            updatedAt TEXT NOT NULL,
+            profileImage TEXT
           )
     ''');
         }
@@ -46,7 +47,8 @@ class AuthLocalRepository {
           token TEXT NOT NULL,
           name TEXT NOT NULL,
           createdAt TEXT NOT NULL,
-          updatedAt TEXT NOT NULL
+          updatedAt TEXT NOT NULL,
+          profileImage TEXT
         )
         ''');
       },
