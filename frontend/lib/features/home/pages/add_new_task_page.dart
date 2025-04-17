@@ -19,19 +19,29 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now(); // 👈 Added for time picker
   Color selectedColor = const Color.fromRGBO(246, 222, 194, 1);
   final formKey = GlobalKey<FormState>();
 
   void createNewTask() async {
     if (formKey.currentState!.validate()) {
       AuthLoggedIn user = context.read<AuthCubit>().state as AuthLoggedIn;
+
+      final DateTime dueAt = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedTime.hour,
+        selectedTime.minute,
+      );
+
       await context.read<TasksCubit>().createNewTask(
         uid: user.user.id,
         title: titleController.text.trim(),
         description: descriptionController.text.trim(),
         color: selectedColor,
         token: user.user.token,
-        dueAt: selectedDate,
+        dueAt: dueAt,
       );
     }
   }
@@ -56,6 +66,7 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
                 context: context,
                 firstDate: DateTime.now(),
                 lastDate: DateTime.now().add(const Duration(days: 90)),
+                initialDate: selectedDate,
               );
 
               if (_selectedDate != null) {
@@ -94,7 +105,6 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
           }
           return Padding(
             padding: const EdgeInsets.all(20.0),
-            // makes the page scrollable
             child: SingleChildScrollView(
               child: Form(
                 key: formKey,
@@ -135,6 +145,21 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
                       },
                       color: selectedColor,
                       pickersEnabled: const {ColorPickerType.wheel: true},
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime,
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            selectedTime = picked;
+                          });
+                        }
+                      },
+                      child: Text("Pick Time: ${selectedTime.format(context)}"),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
