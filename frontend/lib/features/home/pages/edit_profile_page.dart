@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
+import 'package:frontend/features/home/pages/profile_page.dart';
 
 class EditProfilePage extends StatefulWidget {
   static MaterialPageRoute route() =>
@@ -30,7 +31,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _nameController.text = user.name;
       _emailController.text = user.email;
 
-      // If there's an image, set it
+      // TODO: If there's an image, set it
       if (user.profileImage != null) {
         setState(() {
           _pickedImage = File(user.profileImage!);
@@ -50,32 +51,35 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   // Function to handle the profile update
-  // Future<void> _updateProfile() async {
-  //   if (_formKey.currentState?.validate() ?? false) {
-  //     final updatedName = _nameController.text;
-  //     final updatedEmail = _emailController.text;
+  Future<void> _updateProfile() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final updatedName = _nameController.text;
+      final updatedEmail = _emailController.text;
 
-  //     try {
-  //       // Call the AuthCubit to update the user profile
-  //       await context.read<AuthCubit>().updateProfile(
-  //         updatedName,
-  //         updatedEmail,
-  //       );
+      try {
+        // Call the AuthCubit to update the user profile
+        await context.read<AuthCubit>().updateProfile(
+          updatedName,
+          updatedEmail,
+        );
 
-  //       // Optionally show success message
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text('Profile updated successfully')),
-  //       );
+        // Optionally show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully')),
+        );
 
-  //       // Optionally, navigate back to ProfilePage or any other screen after the update
-  //       Navigator.pop(context);
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
-  //     }
-  //   }
-  // }
+        // Optionally, navigate back to ProfilePage or any other screen after the update
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +164,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
               // Save changes button
               Center(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await _updateProfile();
+                  },
                   child: const Text("Save Changes"),
                 ),
               ),
