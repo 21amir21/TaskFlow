@@ -181,4 +181,31 @@ authRouter.post(
   }
 );
 
+authRouter.put(
+  "/update-profile",
+  auth,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { name, email } = req.body;
+
+      if (!req.user) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      await db.update(users).set({ name, email }).where(eq(users.id, req.user));
+
+      const [updatedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user));
+
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  }
+);
+
 export default authRouter;
