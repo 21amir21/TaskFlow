@@ -42,30 +42,30 @@ class _EditTaskPageState extends State<EditTaskPage> {
     selectedColor = widget.task.color;
   }
 
-  // TODO: later
-  // void updateTask() async {
-  //   if (formKey.currentState!.validate()) {
-  //     AuthLoggedIn user = context.read<AuthCubit>().state as AuthLoggedIn;
+  // TODO: make it work later
+  Future<void> updateTask() async {
+    if (formKey.currentState!.validate()) {
+      AuthLoggedIn user = context.read<AuthCubit>().state as AuthLoggedIn;
 
-  //     final DateTime updatedDueAt = DateTime(
-  //       selectedDate.year,
-  //       selectedDate.month,
-  //       selectedDate.day,
-  //       selectedTime.hour,
-  //       selectedTime.minute,
-  //     );
+      final DateTime updatedDueAt = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedTime.hour,
+        selectedTime.minute,
+      );
 
-  //     await context.read<TasksCubit>().updateTask(
-  //       taskId: widget.task.id,
-  //       uid: user.user.id,
-  //       title: titleController.text.trim(),
-  //       description: descriptionController.text.trim(),
-  //       color: selectedColor,
-  //       token: user.user.token,
-  //       dueAt: updatedDueAt,
-  //     );
-  //   }
-  // }
+      await context.read<TasksCubit>().updateTask(
+        taskId: widget.task.id,
+        uid: user.user.id,
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim(),
+        color: selectedColor,
+        token: user.user.token,
+        dueAt: updatedDueAt,
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -182,7 +182,9 @@ class _EditTaskPageState extends State<EditTaskPage> {
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await updateTask();
+                      },
                       child: const Text(
                         "Update",
                         style: TextStyle(color: Colors.white, fontSize: 18),

@@ -111,4 +111,32 @@ class TaskRemoteRepository {
       return false;
     }
   }
+
+  Future<TaskModel> updateTask({
+    required String taskId,
+    required String uid,
+    required String title,
+    required String description,
+    required String hexColor,
+    required String token,
+    required DateTime dueAt,
+  }) async {
+    final response = await http.put(
+      Uri.parse('${Constants.backendUri}/tasks/$taskId'),
+      headers: {"x-auth-token": token, 'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'title': title,
+        'description': description,
+        'hexColor': hexColor,
+        'dueAt': dueAt.toIso8601String(),
+        'uid': uid,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return TaskModel.fromJson(response.body);
+    } else {
+      throw Exception('Failed to update task');
+    }
+  }
 }

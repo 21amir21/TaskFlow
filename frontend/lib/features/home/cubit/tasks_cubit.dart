@@ -67,4 +67,35 @@ class TasksCubit extends Cubit<TasksState> {
       }
     }
   }
+
+  Future<void> updateTask({
+    required String taskId,
+    required String title,
+    required String description,
+    required Color color,
+    required String token,
+    required String uid,
+    required DateTime dueAt,
+  }) async {
+    try {
+      emit(TasksLoading());
+
+      final updatedTask = await taskRemoteRepository.updateTask(
+        taskId: taskId,
+        uid: uid,
+        title: title,
+        description: description,
+        hexColor: rgbToHex(color),
+        token: token,
+        dueAt: dueAt,
+      );
+
+      // TODO: do it later
+      // await taskLocalRepository.updateTask(updatedTask);
+
+      emit(UpdateTaskSuccess(updatedTask));
+    } catch (e) {
+      emit(TasksError(e.toString()));
+    }
+  }
 }
