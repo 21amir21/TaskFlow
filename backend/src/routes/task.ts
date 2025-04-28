@@ -70,4 +70,34 @@ taskRouter.post("/sync", auth, async (req: AuthRequest, res) => {
   }
 });
 
+taskRouter.put("/:taskID", auth, async (req: AuthRequest, res) => {
+  try {
+    const { taskID } = req.params;
+    const { title, description, hexColor, dueAt } = req.body;
+
+    // Convert the dueAt to a Date object
+    const updatedDueAt = new Date(dueAt);
+
+    // Update the task in the database
+    const updatedTask = await db
+      .update(tasks)
+      .set({
+        title,
+        description,
+        hexColor,
+        dueAt: updatedDueAt,
+      })
+      .where(eq(tasks.id, taskID))
+      .returning();
+
+    if (updatedTask.length > 0) {
+      res.status(200).json(updatedTask[0]);
+    } else {
+      res.status(404).json({ error: "Task not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+});
+
 export default taskRouter;
