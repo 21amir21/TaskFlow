@@ -5,6 +5,7 @@ import 'package:frontend/core/constants/utils.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
 import 'package:frontend/features/home/cubit/tasks_cubit.dart';
 import 'package:frontend/features/home/pages/add_new_task_page.dart';
+import 'package:frontend/features/home/pages/edit_task_page.dart'; // <-- Make sure this is imported
 import 'package:frontend/features/home/pages/profile_page.dart';
 import 'package:frontend/features/home/widgets/date_selector.dart';
 import 'package:frontend/features/home/widgets/task_card.dart';
@@ -141,10 +142,18 @@ class _HomePageState extends State<HomePage> {
                       return Row(
                         children: [
                           Expanded(
-                            child: TaskCard(
-                              color: task.color,
-                              headerText: task.title,
-                              descriptionText: task.description,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  EditTaskPage.route(task),
+                                );
+                              },
+                              child: TaskCard(
+                                color: task.color,
+                                headerText: task.title,
+                                descriptionText: task.description,
+                              ),
                             ),
                           ),
                           Container(
