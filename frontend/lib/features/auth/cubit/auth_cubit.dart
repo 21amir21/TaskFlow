@@ -101,4 +101,22 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError("Failed to change password: $e"));
     }
   }
+
+  Future<void> updateProfile(String name, String email) async {
+    try {
+      emit(AuthLoading());
+      final updatedUser = await authRemoteRepository.updateProfile(
+        name: name,
+        email: email,
+      );
+      if (updatedUser != null) {
+        await authLocalRepository.insertUser(updatedUser);
+        emit(AuthLoggedIn(updatedUser));
+      } else {
+        emit(AuthError("Failed to update profile"));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
 }

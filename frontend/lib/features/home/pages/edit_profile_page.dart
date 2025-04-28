@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
-import 'package:frontend/features/home/pages/profile_page.dart';
 
 class EditProfilePage extends StatefulWidget {
   static MaterialPageRoute route() =>
@@ -62,18 +61,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           updatedName,
           updatedEmail,
         );
-
-        // Optionally show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
-
-        // Optionally, navigate back to ProfilePage or any other screen after the update
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
       } catch (e) {
+        // Handle any error in the profile update process
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
@@ -83,94 +72,110 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Edit Profile")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Circular Avatar (Profile Image)
-              Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage:
-                          _pickedImage != null
-                              ? FileImage(_pickedImage!)
-                              : const AssetImage(
-                                    "assets/imgs/default_avatar.jpg",
-                                  )
-                                  as ImageProvider,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: _removeImage,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.delete,
-                            size: 20,
-                            color: Colors.white,
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthLoggedIn) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+
+          // Navigate to profile page after successful update
+          Navigator.pop(context);
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.error)));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Edit Profile")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Circular Avatar (Profile Image)
+                Center(
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage:
+                            _pickedImage != null
+                                ? FileImage(_pickedImage!)
+                                : const AssetImage(
+                                      "assets/imgs/default_avatar.jpg",
+                                    )
+                                    as ImageProvider,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _removeImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Name field
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: "Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Email field
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  // Simple email validation
-                  final emailRegex = RegExp(r'\S+@\S+\.\S+');
-                  if (!emailRegex.hasMatch(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Save changes button
-              Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await _updateProfile();
+                // Name field
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: "Name"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
                   },
-                  child: const Text("Save Changes"),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // Email field
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: "Email"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    // Simple email validation
+                    final emailRegex = RegExp(r'\S+@\S+\.\S+');
+                    if (!emailRegex.hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                // Save changes button
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _updateProfile();
+                    },
+                    child: const Text("Save Changes"),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

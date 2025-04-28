@@ -108,4 +108,32 @@ class AuthRemoteRepository {
       throw e.toString();
     }
   }
+
+  Future<UserModel?> updateProfile({
+    required String name,
+    required String email,
+  }) async {
+    try {
+      final token = await spService.getToken();
+      if (token == null) {
+        return null;
+      }
+
+      final res = await http.put(
+        Uri.parse("${Constants.backendUri}/auth/update-profile"),
+        headers: {"Content-Type": "application/json", "x-auth-token": token},
+        body: jsonEncode({"name": name, "email": email}),
+      );
+
+      if (res.statusCode == 200) {
+        return UserModel.fromJson(res.body);
+      } else {
+        final errorData = jsonDecode(res.body);
+        final errorMessage = errorData["error"] ?? "Unknown error";
+        throw errorMessage.toString();
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
 }
