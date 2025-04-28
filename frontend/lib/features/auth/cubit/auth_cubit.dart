@@ -80,4 +80,25 @@ class AuthCubit extends Cubit<AuthState> {
 
     Navigator.of(context).push(LoginPage.route());
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      emit(AuthLoading());
+      final token = await spService.getToken();
+      if (token == null) throw "Token not found";
+
+      await authRemoteRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        token: token,
+      );
+
+      getUserData();
+    } catch (e) {
+      emit(AuthError("Failed to change password: $e"));
+    }
+  }
 }

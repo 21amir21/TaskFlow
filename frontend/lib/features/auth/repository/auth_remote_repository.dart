@@ -85,4 +85,27 @@ class AuthRemoteRepository {
       return user;
     }
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String token,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse("${Constants.backendUri}/auth/change-password"),
+        headers: {"Content-Type": "application/json", "x-auth-token": token},
+        body: jsonEncode({
+          "currentPassword": currentPassword,
+          "newPassword": newPassword,
+        }),
+      );
+
+      if (res.statusCode != 200) {
+        throw jsonDecode(res.body)["error"];
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
 }
