@@ -138,4 +138,47 @@ authRouter.get("/", auth, async (req: AuthRequest, res) => {
   }
 });
 
+authRouter.post(
+  "/change-password",
+  auth,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!req.user) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user));
+
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      const isMatch = await bcryptjs.compare(currentPassword, user.password);
+
+      if (!isMatch) {
+        res.status(400).json({ error: "Current password is incorrect" });
+        return;
+      }
+
+      const hashedNewPassword = await bcryptjs.hash(newPassword, 8);
+
+      await db
+        .update(users)
+        .set({ password: hashedNewPassword })
+        .where(eq(users.id, req.user));
+
+      res.status(200).json({ message: "Password updated successfully" });
+    } catch (err) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
 export default authRouter;
