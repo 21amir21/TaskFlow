@@ -140,39 +140,69 @@ class _HomePageState extends State<HomePage> {
                     itemCount: tasks.length,
                     itemBuilder: (context, index) {
                       final task = tasks[index];
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  EditTaskPage.route(task),
-                                );
-                              },
-                              child: TaskCard(
-                                color: task.color,
-                                headerText: task.title,
-                                descriptionText: task.description,
+                      return Dismissible(
+                        key: Key(
+                          task.id,
+                        ), // Make sure each task has a unique id
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (_) async {
+                          final authState = context.read<AuthCubit>().state;
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
+                          ); // capture before await
+
+                          if (authState is AuthLoggedIn) {
+                            await context.read<TasksCubit>().deleteTask(
+                              taskId: task.id,
+                              token: authState.user.token,
+                            );
+
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(content: Text('Task Completed!')),
+                            );
+                          }
+                        },
+
+                        background: Container(
+                          color: Colors.green,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 20),
+                          child: const Icon(Icons.check, color: Colors.white),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    EditTaskPage.route(task),
+                                  );
+                                },
+                                child: TaskCard(
+                                  color: task.color,
+                                  headerText: task.title,
+                                  descriptionText: task.description,
+                                ),
                               ),
                             ),
-                          ),
-                          Container(
-                            height: 10,
-                            width: 10,
-                            decoration: BoxDecoration(
-                              color: strengthenColor(task.color, 0.69),
-                              shape: BoxShape.circle,
+                            Container(
+                              height: 10,
+                              width: 10,
+                              decoration: BoxDecoration(
+                                color: strengthenColor(task.color, 0.69),
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              DateFormat.jm().format(task.dueAt),
-                              style: const TextStyle(fontSize: 17),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                DateFormat.jm().format(task.dueAt),
+                                style: const TextStyle(fontSize: 17),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       );
                     },
                   ),

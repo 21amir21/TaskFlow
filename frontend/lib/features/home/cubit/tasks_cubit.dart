@@ -90,10 +90,28 @@ class TasksCubit extends Cubit<TasksState> {
         dueAt: dueAt,
       );
 
-      // TODO: do it later
-      // await taskLocalRepository.updateTask(updatedTask);
+      await taskLocalRepository.updateTask(updatedTask);
 
       emit(UpdateTaskSuccess(updatedTask));
+    } catch (e) {
+      emit(TasksError(e.toString()));
+    }
+  }
+
+  Future<void> deleteTask({
+    required String taskId,
+    required String token,
+  }) async {
+    try {
+      emit(TasksLoading());
+      await taskRemoteRepository.deleteTask(taskID: taskId, token: token);
+      await taskLocalRepository.deleteTask(taskId);
+
+      // Get the updated list after deletion
+      final updatedTasks = await taskRemoteRepository.getTasks(token: token);
+
+      // Emit updated task list
+      emit(GetTasksSuccess(updatedTasks));
     } catch (e) {
       emit(TasksError(e.toString()));
     }

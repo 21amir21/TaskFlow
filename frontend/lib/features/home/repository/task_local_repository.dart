@@ -107,4 +107,21 @@ class TaskLocalRepository {
       whereArgs: [id],
     );
   }
+
+  Future<void> updateTask(TaskModel task) async {
+    final db = await database;
+
+    await db.update(
+      tableName,
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteTask(String taskID) async {
+    final db = await database;
+    await db.delete('tasks', where: 'id = ?', whereArgs: [taskID]);
+  }
 }

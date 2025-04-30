@@ -139,4 +139,19 @@ class TaskRemoteRepository {
       throw Exception('Failed to update task');
     }
   }
+
+  Future<void> deleteTask({
+    required String taskID,
+    required String token,
+  }) async {
+    final res = await http.delete(
+      Uri.parse("${Constants.backendUri}/tasks"),
+      headers: {'Content-Type': 'application/json', 'x-auth-token': token},
+      body: jsonEncode({'taskID': taskID}),
+    );
+
+    if (res.statusCode != 200) {
+      throw jsonDecode(res.body)['error'];
+    }
+  }
 }
