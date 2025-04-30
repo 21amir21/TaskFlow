@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/services/sp_service.dart';
@@ -117,6 +118,38 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> updateProfileImage(File imageFile) async {
+    try {
+      emit(AuthLoading());
+
+      // Call a method in your remote repository to upload the image and get the URL
+      final imageUrl = await authRemoteRepository.uploadProfileImage(imageFile);
+
+      // Update the user with the new profile image
+      final updatedUser = await authRemoteRepository.updateProfileImageUrl(
+        imageUrl,
+      );
+
+      await authLocalRepository.insertUser(updatedUser);
+      emit(AuthLoggedIn(updatedUser));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> removeProfileImage() async {
+    try {
+      emit(AuthLoading());
+
+      final updatedUser = await authRemoteRepository.removeProfileImage();
+
+      await authLocalRepository.insertUser(updatedUser);
+      emit(AuthLoggedIn(updatedUser));
+    } catch (e) {
+      emit(AuthError("Failed to remove profile image: $e"));
     }
   }
 }

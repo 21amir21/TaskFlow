@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
+import 'package:frontend/models/user_model.dart';
 
 class EditProfilePage extends StatefulWidget {
   static MaterialPageRoute route() =>
@@ -18,35 +19,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   File? _pickedImage;
+  UserModel? _user;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Fetch current user data and set it to the controllers
     final authState = context.read<AuthCubit>().state;
 
     if (authState is AuthLoggedIn) {
-      final user = authState.user;
-      _nameController.text = user.name;
-      _emailController.text = user.email;
-
-      // TODO: If there's an image, set it
-      if (user.profileImage != null) {
-        setState(() {
-          _pickedImage = File(user.profileImage!);
-        });
-      }
+      _user = authState.user;
+      _nameController.text = _user!.name;
+      _emailController.text = _user!.email;
     }
   }
 
   // Function to handle image removal
-  void _removeImage() {
+  void _removeImage() async {
     setState(() {
       _pickedImage = null; // Remove the image
     });
 
-    // Optionally, update the backend to reflect the removed image
-    // context.read<AuthCubit>().removeProfileImage();
+    try {
+      await context.read<AuthCubit>().removeProfileImage();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to remove image: $e")));
+    }
   }
 
   // Function to handle the profile update
@@ -105,9 +104,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         backgroundImage:
                             _pickedImage != null
                                 ? FileImage(_pickedImage!)
-                                : const AssetImage(
-                                      "assets/imgs/default_avatar.jpg",
-                                    )
+                                : (_user != null &&
+                                            _user!.profileImage != null &&
+                                            _user!.profileImage!.isNotEmpty
+                                        ? NetworkImage(_user!.profileImage!)
+                                        : const AssetImage(
+                                          "assets/imgs/default_avatar.jpg",
+                                        ))
                                     as ImageProvider,
                       ),
                       Positioned(

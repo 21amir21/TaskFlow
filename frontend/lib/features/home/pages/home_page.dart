@@ -64,7 +64,8 @@ class _HomePageState extends State<HomePage> {
                         return CircleAvatar(
                           radius: 19,
                           backgroundImage:
-                              state.user.profileImage != null
+                              state.user.profileImage != null &&
+                                      state.user.profileImage!.isNotEmpty
                                   ? NetworkImage(state.user.profileImage!)
                                   : const AssetImage(
                                         "assets/imgs/default_avatar.jpg",

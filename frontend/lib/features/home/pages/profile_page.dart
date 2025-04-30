@@ -26,12 +26,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
       setState(() {
-        _pickedImage = File(pickedFile.path);
+        _pickedImage = imageFile;
       });
 
-      // TODO: Upload to backend and update profileImage field
-      // context.read<AuthCubit>().updateProfileImage(pickedFile.path);
+      // Upload the image and update profile image
+      await context.read<AuthCubit>().updateProfileImage(imageFile);
     }
   }
 
@@ -60,7 +61,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundImage:
                         _pickedImage != null
                             ? FileImage(_pickedImage!)
-                            : user.profileImage != null
+                            : (user.profileImage != null &&
+                                user.profileImage!.isNotEmpty)
                             ? NetworkImage(user.profileImage!)
                             : const AssetImage("assets/imgs/default_avatar.jpg")
                                 as ImageProvider,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:frontend/core/constants/constants.dart';
 import 'package:frontend/core/services/sp_service.dart';
@@ -132,6 +133,83 @@ class AuthRemoteRepository {
         final errorMessage = errorData["error"] ?? "Unknown error";
         throw errorMessage.toString();
       }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<String> uploadProfileImage(File imageFile) async {
+    try {
+      final token = await spService.getToken();
+      if (token == null) {
+        throw "Unauthorized";
+      }
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse("${Constants.backendUri}/auth/upload-profile-image"),
+      );
+
+      request.headers['x-auth-token'] = token;
+
+      request.files.add(
+        await http.MultipartFile.fromPath('image', imageFile.path),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return json['imageUrl']; // adjust based on your backend response
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw errorData["error"] ?? "Failed to upload image";
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<UserModel> updateProfileImageUrl(String imageUrl) async {
+    try {
+      final token = await spService.getToken();
+      if (token == null) {
+        throw "Unauthorized";
+      }
+
+      final res = await http.put(
+        Uri.parse("${Constants.backendUri}/auth/update-profile-image"),
+        headers: {"Content-Type": "application/json", "x-auth-token": token},
+        body: jsonEncode({"profileImage": imageUrl}),
+      );
+
+      if (res.statusCode == 200) {
+        return UserModel.fromJson(res.body);
+      } else {
+        final errorData = jsonDecode(res.body);
+        throw errorData["error"] ?? "Failed to update profile image";
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<UserModel> removeProfileImage() async {
+    try {
+      final token = await spService.getToken();
+      if (token == null) throw "Token not found";
+
+      final res = await http.put(
+        Uri.parse("${Constants.backendUri}/auth/remove-profile-image"),
+        headers: {"Content-Type": "application/json", "x-auth-token": token},
+      );
+
+      if (res.statusCode != 200) {
+        throw jsonDecode(res.body)["error"];
+      }
+
+      return UserModel.fromJson(res.body);
     } catch (e) {
       throw e.toString();
     }
