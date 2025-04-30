@@ -47,4 +47,4 @@ app.*.map.json
 
 
 # ignoring SQLite3 .db files
-/frontend/lib/*.db
+frontend/lib/*.db
