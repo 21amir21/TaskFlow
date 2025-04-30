@@ -1,8 +1,12 @@
 import express from "express";
 import authRouter from "./routes/auth";
 import taskRouter from "./routes/task";
+import path from "path";
 
 const app = express();
+
+// Serve images statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(express.json());
 app.use("/auth", authRouter);

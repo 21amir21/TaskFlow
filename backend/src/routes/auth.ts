@@ -5,6 +5,9 @@ import { eq } from "drizzle-orm";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { auth, AuthRequest } from "../middleware/auth";
+import { upload } from "../middleware/multerConfig";
+import path from "path";
+import fs from "fs";
 
 const authRouter = Router();
 
@@ -204,6 +207,109 @@ authRouter.put(
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to update profile" });
+    }
+  }
+);
+
+authRouter.post(
+  "/upload-profile-image",
+  auth,
+  upload.single("image"),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: "No image uploaded" });
+      }
+
+      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file?.filename
+      }`;
+      res.status(200).json({ imageUrl });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
+  }
+);
+
+authRouter.put(
+  "/update-profile-image",
+  auth,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { profileImage } = req.body;
+
+      if (!req.user) {
+        res.status(401).json({ error: "Unauthorized" });
+      }
+
+      await db
+        .update(users)
+        .set({ profileImage })
+        .where(eq(users.id, req.user as string));
+
+      const [updatedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user as string));
+
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to update profile image" });
+    }
+  }
+);
+
+authRouter.put(
+  "/remove-profile-image",
+  auth,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const userId = req.user as string;
+
+      // Find the user in the database
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+      }
+
+      // If the user has a profile image, remove it
+      if (user.profileImage) {
+        const imagePath = path.join(
+          __dirname,
+          "..",
+          "uploads",
+          user.profileImage
+        );
+
+        // Remove file if it exists
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+
+        // Update the user record to remove the profile image
+        await db
+          .update(users)
+          .set({ profileImage: "" })
+          .where(eq(users.id, userId));
+      }
+
+      // Get the updated user record and send it back
+      const [updatedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to remove profile image" });
     }
   }
 );
