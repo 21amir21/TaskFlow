@@ -88,96 +88,109 @@ class _EditProfilePageState extends State<EditProfilePage> {
       },
       child: Scaffold(
         appBar: AppBar(title: const Text("Edit Profile")),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Circular Avatar (Profile Image)
-                Center(
-                  child: Stack(
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(15.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height * 0.8,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundImage:
-                            _pickedImage != null
-                                ? FileImage(_pickedImage!)
-                                : (_user != null &&
-                                            _user!.profileImage != null &&
-                                            _user!.profileImage!.isNotEmpty
-                                        ? NetworkImage(_user!.profileImage!)
-                                        : const AssetImage(
-                                          "assets/imgs/default_avatar.jpg",
-                                        ))
-                                    as ImageProvider,
+                      // Circular Avatar (Profile Image)
+                      Center(
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 60,
+                              backgroundImage:
+                                  _pickedImage != null
+                                      ? FileImage(_pickedImage!)
+                                      : (_user != null &&
+                                                  _user!.profileImage != null &&
+                                                  _user!
+                                                      .profileImage!
+                                                      .isNotEmpty
+                                              ? NetworkImage(
+                                                _user!.profileImage!,
+                                              )
+                                              : const AssetImage(
+                                                "assets/imgs/default_avatar.jpg",
+                                              ))
+                                          as ImageProvider,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _removeImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.delete,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _removeImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.delete,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ),
+                      const SizedBox(height: 20),
+
+                      // Name field
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(labelText: "Name"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Email field
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(labelText: "Email"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          // Simple email validation
+                          final emailRegex = RegExp(r'\S+@\S+\.\S+');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Save changes button
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await _updateProfile();
+                          },
+                          child: const Text("Save Changes"),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Name field
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: "Name"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Email field
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(labelText: "Email"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    // Simple email validation
-                    final emailRegex = RegExp(r'\S+@\S+\.\S+');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Save changes button
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await _updateProfile();
-                    },
-                    child: const Text("Save Changes"),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
