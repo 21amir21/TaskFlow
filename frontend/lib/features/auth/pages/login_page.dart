@@ -71,7 +71,6 @@ class _LoginPageState extends State<LoginPage> {
                     controller: emailController,
                     decoration: const InputDecoration(hintText: "Email"),
                     validator: (value) {
-                      // TODO: change the !value.trim().contains("@") with the right regex
                       if (value == null ||
                           value.trim().isEmpty ||
                           !value.trim().contains("@")) {

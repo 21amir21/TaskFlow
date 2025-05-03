@@ -42,7 +42,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
     selectedColor = widget.task.color;
   }
 
-  // TODO: make it work later
   Future<void> updateTask() async {
     if (formKey.currentState!.validate()) {
       AuthLoggedIn user = context.read<AuthCubit>().state as AuthLoggedIn;
