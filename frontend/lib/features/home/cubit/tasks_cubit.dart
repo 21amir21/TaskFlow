@@ -32,6 +32,8 @@ class TasksCubit extends Cubit<TasksState> {
       );
       await taskLocalRepository.insertTask(taskModel);
 
+      await scheduleTaskNotification(taskModel);
+
       emit(AddNewTaskSuccess(taskModel));
     } catch (e) {
       emit(TasksError(e.toString()));
@@ -91,6 +93,8 @@ class TasksCubit extends Cubit<TasksState> {
       );
 
       await taskLocalRepository.updateTask(updatedTask);
+
+      await scheduleTaskNotification(updatedTask);
 
       emit(UpdateTaskSuccess(updatedTask));
     } catch (e) {
