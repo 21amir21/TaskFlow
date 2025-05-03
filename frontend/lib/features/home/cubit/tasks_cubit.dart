@@ -113,7 +113,6 @@ class TasksCubit extends Cubit<TasksState> {
         await scheduleTaskNotification(updatedTask);
       } catch (notificationError) {
         debugPrint("Failed to schedule notification: $notificationError");
-        // Optionally show a non-blocking snackbar or toast
         ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
           const SnackBar(
             content: Text(
