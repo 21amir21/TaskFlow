@@ -32,7 +32,21 @@ class TasksCubit extends Cubit<TasksState> {
       );
       await taskLocalRepository.insertTask(taskModel);
 
-      await scheduleTaskNotification(taskModel);
+      // await scheduleTaskNotification(taskModel);
+      // Step 3: Try scheduling the notification separately
+      try {
+        await scheduleTaskNotification(taskModel);
+      } catch (notificationError) {
+        debugPrint("Failed to schedule notification: $notificationError");
+        // Optionally show a non-blocking snackbar or toast
+        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Task added, but notification couldn't be scheduled.",
+            ),
+          ),
+        );
+      }
 
       emit(AddNewTaskSuccess(taskModel));
     } catch (e) {
@@ -94,7 +108,20 @@ class TasksCubit extends Cubit<TasksState> {
 
       await taskLocalRepository.updateTask(updatedTask);
 
-      await scheduleTaskNotification(updatedTask);
+      // await scheduleTaskNotification(updatedTask);
+      try {
+        await scheduleTaskNotification(updatedTask);
+      } catch (notificationError) {
+        debugPrint("Failed to schedule notification: $notificationError");
+        // Optionally show a non-blocking snackbar or toast
+        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Task Updated, but notification couldn't be scheduled.",
+            ),
+          ),
+        );
+      }
 
       emit(UpdateTaskSuccess(updatedTask));
     } catch (e) {

@@ -63,3 +63,5 @@ Future<void> scheduleTaskNotification(TaskModel task) async {
         UILocalNotificationDateInterpretation.absoluteTime,
   );
 }
+
+final navigatorKey = GlobalKey<NavigatorState>();
